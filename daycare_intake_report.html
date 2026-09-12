@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Day Care 病人记录 & 报告生成</title>
+<style>
+  :root{
+    --bg:#F7F8FA;
+    --surface:#FFFFFF;
+    --border:#E2E6EA;
+    --text:#1F2937;
+    --text-secondary:#6B7280;
+    --accent:#0F766E;
+    --accent-bg:#E6F4F2;
+    --accent-border:#0F766E;
+    --success:#0F766E;
+    --radius:10px;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:var(--font);
+    background:var(--bg);
+    color:var(--text);
+    padding:16px;
+    padding-bottom:60px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1{font-size:17px;margin:0 0 4px;}
+  .sub{font-size:12px;color:var(--text-secondary);margin:0 0 18px;}
+  section{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .label{font-size:13px;color:var(--text-secondary);margin:0 0 8px;font-weight:600;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .row:last-child{margin-bottom:0;}
+  button.chip{
+    flex:1 1 30%;
+    min-height:44px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    color:var(--text);
+    font-size:14px;
+    font-family:var(--font);
+    padding:8px 10px;
+    cursor:pointer;
+    transition:background .12s,border-color .12s,color .12s;
+  }
+  button.chip.active{
+    background:var(--accent-bg);
+    border-color:var(--accent-border);
+    color:var(--accent);
+    font-weight:600;
+  }
+  button.wide{flex:1 1 100%; text-align:left;}
+  input[type=text], input[type=time], select, textarea{
+    width:100%;
+    min-height:44px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:14px;
+    font-family:var(--font);
+    background:var(--surface);
+    color:var(--text);
+    margin-top:8px;
+  }
+  textarea{
+    font-family:var(--mono);
+    font-size:13px;
+    resize:vertical;
+    background:#FAFBFC;
+    margin-top:0;
+  }
+  .hidden{display:none !important;}
+  .actionBtn{
+    width:100%;
+    min-height:46px;
+    border:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    font-family:var(--font);
+    cursor:pointer;
+    margin-top:8px;
+  }
+  .actionBtn.secondary{
+    background:var(--surface);
+    color:var(--accent);
+    border:1px solid var(--accent-border);
+  }
+  .msg{font-size:12px;color:var(--success);height:16px;margin:6px 0 0;}
+  .fieldGroup{display:flex;flex-direction:column;}
+</style>
+</head>
+<body>
+
+<h1>Day Care 病人快速记录</h1>
+<p class="sub">点选为主，填完可一键复制摘要或按手术类型生成 PRE/POST 报告</p>
+
+<section>
+  <p class="label">最后进食与药物</p>
+  <div class="row">
+    <input type="time" id="mealTime" style="flex:1;margin-top:0;">
+    <input type="text" id="mealFood" placeholder="食物内容" style="flex:1.4;margin-top:0;">
+  </div>
+  <div class="row">
+    <button type="button" class="chip" data-group="ownMed" data-val="yes">自备药物：有</button>
+    <button type="button" class="chip" data-group="ownMed" data-val="no">自备药物：无</button>
+  </div>
+  <input type="text" id="ownMedDetail" placeholder="药物详情" class="hidden">
+</section>
+
+<section>
+  <p class="label">病史</p>
+  <div class="row">
+    <button type="button" class="chip" data-group="history" data-val="HTN">高血压</button>
+    <button type="button" class="chip" data-group="history" data-val="DM">糖尿病</button>
+    <button type="button" class="chip" data-group="history" data-val="Heart">心脏病</button>
+  </div>
+  <input type="text" id="historyOther" placeholder="其他病史">
+</section>
+
+<section>
+  <p class="label">手术史</p>
+  <div class="row">
+    <button type="button" class="chip" data-group="surgery" data-val="nil">无</button>
+    <button type="button" class="chip" data-group="surgery" data-val="has">有</button>
+  </div>
+  <input type="text" id="surgeryDetail" placeholder="手术名称与年份" class="hidden">
+</section>
+
+<section>
+  <p class="label">过敏史</p>
+  <div class="row">
+    <button type="button" class="chip" data-group="allergy" data-val="nkda">NKDA 无</button>
+    <button type="button" class="chip" data-group="allergy" data-val="has">有过敏</button>
+  </div>
+  <input type="text" id="allergyDetail" placeholder="药物/食物/乳胶过敏内容" class="hidden">
+</section>
+
+<section>
+  <p class="label">假牙</p>
+  <div class="row">
+    <button type="button" class="chip" data-group="denture" data-val="none">无</button>
+    <button type="button" class="chip" data-group="denture" data-val="upper">上排</button>
+    <button type="button" class="chip" data-group="denture" data-val="lower">下排</button>
+    <button type="button" class="chip" data-group="denture" data-val="both">上下都有</button>
+  </div>
+</section>
+
+<section>
+  <p class="label">财物保管</p>
+  <input type="text" id="valuables" placeholder="贵重物品/物品内容" style="margin-top:0;margin-bottom:8px;">
+  <div class="row">
+    <button type="button" class="chip" data-group="handover" data-val="patient">交予病人/家属</button>
+    <button type="button" class="chip" data-group="handover" data-val="safe">交予病房保险箱</button>
+  </div>
+</section>
+
+<section>
+  <p class="label">病房饮食</p>
+  <div class="row">
+    <button type="button" class="chip" data-group="diet" data-val="normal">普通饮食</button>
+    <button type="button" class="chip" data-group="diet" data-val="soft">软食</button>
+  </div>
+  <input type="text" id="dietOther" placeholder="其他饮食要求">
+</section>
+
+<section>
+  <p class="label">同意与宣教</p>
+  <div class="fieldGroup" style="gap:8px;">
+    <button type="button" class="chip wide" data-toggle="consent">手术同意书已签署</button>
+    <button type="button" class="chip wide" data-toggle="orientation">病人环境宣教已完成</button>
+  </div>
+</section>
+
+<section>
+  <p class="label">摘要（点选记录用，非报告）</p>
+  <textarea id="summary" rows="9" readonly></textarea>
+  <button type="button" class="actionBtn" id="copySummary">复制摘要</button>
+</section>
+
+<section>
+  <p class="label">手术类型</p>
+  <select id="procType">
+    <option value="">选择手术类型</option>
+    <option value="phaco">PHACO 白内障手术</option>
+    <option value="injection">INJECTION 眼内注射</option>
+    <option value="pterygium">PTERYGIUM 翼状胬肉切除术</option>
+    <option value="colonoscopy">COLONOSCOPY 肠镜检查</option>
+    <option value="bcf">BCF / OTHER 动静脉瘘造瘘术</option>
+  </select>
+
+  <div id="extraFields" class="hidden" style="margin-top:10px;">
+    <div class="row" id="sideRow">
+      <button type="button" class="chip" data-group="side" data-val="LT">左 LT</button>
+      <button type="button" class="chip" data-group="side" data-val="RT">右 RT</button>
+    </div>
+    <div class="row" id="anesRow">
+      <button type="button" class="chip" data-group="anes" data-val="LA">局麻 LA</button>
+      <button type="button" class="chip" data-group="anes" data-val="GA">全麻 GA</button>
+    </div>
+    <div class="row hidden" id="branulaRow">
+      <button type="button" class="chip" data-group="branula" data-val="22G">22G</button>
+      <button type="button" class="chip" data-group="branula" data-val="20G">20G</button>
+    </div>
+    <input type="text" id="doctorName" placeholder="主治医生姓名">
+    <input type="text" id="tca" placeholder="复诊安排（默认：1 week later）">
+  </div>
+</section>
+
+<section>
+  <p class="label">PRE 报告（可直接编辑后复制）</p>
+  <textarea id="preReport" rows="10"></textarea>
+  <button type="button" class="actionBtn" id="copyPre">复制 PRE 报告</button>
+
+  <p class="label" style="margin-top:16px;">POST 报告（可直接编辑后复制）</p>
+  <textarea id="postReport" rows="10"></textarea>
+  <button type="button" class="actionBtn" id="copyPost">复制 POST 报告</button>
+
+  <p class="msg" id="copyMsg"></p>
+  <button type="button" class="actionBtn secondary" id="resetBtn">清空重填（下一位病人）</button>
+</section>
+
+<script>
+const state = { ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, anes:null, branula:null };
+let manualPre = false, manualPost = false;
+
+function setActive(btn, active){ btn.classList.toggle('active', active); }
+
+document.querySelectorAll('button[data-group]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const group = btn.dataset.group;
+    const val = btn.dataset.val;
+    if(group==='history'){
+      if(state.history.has(val)){ state.history.delete(val); setActive(btn,false); }
+      else { state.history.add(val); setActive(btn,true); }
+    } else {
+      document.querySelectorAll('button[data-group="'+group+'"]').forEach(b=>setActive(b,false));
+      state[group] = val;
+      setActive(btn,true);
+    }
+    document.getElementById('ownMedDetail').classList.toggle('hidden', state.ownMed!=='yes');
+    document.getElementById('surgeryDetail').classList.toggle('hidden', state.surgery!=='has');
+    document.getElementById('allergyDetail').classList.toggle('hidden', state.allergy!=='has');
+    manualPre=false; manualPost=false;
+    renderSummary(); renderReports();
+  });
+});
+
+document.querySelectorAll('button[data-toggle]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const key = btn.dataset.toggle;
+    state[key] = !state[key];
+    setActive(btn, state[key]);
+    manualPre=false; manualPost=false;
+    renderSummary(); renderReports();
+  });
+});
+
+['mealTime','mealFood','ownMedDetail','historyOther','surgeryDetail','allergyDetail','valuables','dietOther','doctorName','tca'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{ manualPre=false; manualPost=false; renderSummary(); renderReports(); });
+});
+
+document.getElementById('preReport').addEventListener('input', ()=>{ manualPre=true; });
+document.getElementById('postReport').addEventListener('input', ()=>{ manualPost=true; });
+
+document.getElementById('procType').addEventListener('change', (e)=>{
+  const t = e.target.value;
+  document.getElementById('extraFields').classList.toggle('hidden', !t);
+  document.getElementById('sideRow').classList.toggle('hidden', !['phaco','pterygium','bcf'].includes(t));
+  document.getElementById('anesRow').classList.toggle('hidden', t==='colonoscopy');
+  document.getElementById('branulaRow').classList.toggle('hidden', t!=='colonoscopy');
+  manualPre=false; manualPost=false;
+  renderReports();
+});
+
+function line(label, value){ return value ? label+': '+value : label+': —'; }
+
+function renderSummary(){
+  const mealTime = document.getElementById('mealTime').value;
+  const mealFood = document.getElementById('mealFood').value;
+  const ownMedDetail = document.getElementById('ownMedDetail').value;
+  const historyOther = document.getElementById('historyOther').value;
+  const surgeryDetail = document.getElementById('surgeryDetail').value;
+  const allergyDetail = document.getElementById('allergyDetail').value;
+  const valuables = document.getElementById('valuables').value;
+  const dietOther = document.getElementById('dietOther').value;
+
+  const historyLabels = {HTN:'高血压',DM:'糖尿病',Heart:'心脏病'};
+  const historyText = [...state.history].map(h=>historyLabels[h]).concat(historyOther?[historyOther]:[]).join('、') || '无';
+  const dentureLabels = {none:'无',upper:'上排',lower:'下排',both:'上下都有'};
+  const handoverLabels = {patient:'病人/家属',safe:'病房保险箱'};
+  const dietLabels = {normal:'普通饮食',soft:'软食'};
+
+  const lines = [
+    '【最后进食与药物】',
+    line('时间', mealTime), line('食物', mealFood),
+    line('自备药物', state.ownMed==='yes' ? ('有 - '+(ownMedDetail||'')) : (state.ownMed==='no' ? '无' : '')),
+    '', '【病史】', historyText,
+    '', '【手术史】', state.surgery==='nil' ? '无' : (state.surgery==='has' ? (surgeryDetail||'有（未填详情）') : ''),
+    '', '【过敏史】', state.allergy==='nkda' ? 'NKDA 无已知药物过敏' : (state.allergy==='has' ? (allergyDetail||'有（未填详情）') : ''),
+    '', '【假牙】', state.denture ? dentureLabels[state.denture] : '',
+    '', '【财物保管】', line('物品', valuables), line('交予', state.handover ? handoverLabels[state.handover] : ''),
+    '', '【病房饮食】', (state.diet ? dietLabels[state.diet] : '') + (dietOther ? '，'+dietOther : ''),
+    '', '【同意与宣教】',
+    (state.consent ? '☑' : '☐') + ' 手术同意书已签署',
+    (state.orientation ? '☑' : '☐') + ' 病人环境宣教已完成'
+  ];
+  document.getElementById('summary').value = lines.join('\n');
+}
+
+function historyText(){
+  const labels = {HTN:'HTN',DM:'DM',Heart:'HEART DISEASE'};
+  const historyOther = document.getElementById('historyOther').value;
+  const arr = [...state.history].map(h=>labels[h]);
+  if(historyOther) arr.push(historyOther.toUpperCase());
+  return arr.length ? arr.join(', ') : 'NIL';
+}
+function surgeryText(){
+  const surgeryDetail = document.getElementById('surgeryDetail').value;
+  if(state.surgery==='nil') return 'NIL';
+  if(state.surgery==='has') return surgeryDetail ? surgeryDetail.toUpperCase() : '[PENDING DETAIL]';
+  return '[PENDING]';
+}
+function allergyLine(){
+  const allergyDetail = document.getElementById('allergyDetail').value;
+  if(state.allergy==='nkda') return 'NO ALLERGY.';
+  if(state.allergy==='has') return 'ALLERGY: ' + (allergyDetail ? allergyDetail.toUpperCase() : '[PENDING DETAIL]') + '.';
+  return 'NO ALLERGY / ALLERGY STATUS: [PENDING].';
+}
+function consentOrientLine(procLabel){
+  const c = state.consent, o = state.orientation;
+  if(c && o) return 'CONSENT FOR '+procLabel+' SIGNED AND ORIENTATION DONE.';
+  if(!c && !o) return 'CONSENT FOR '+procLabel+' [PENDING] AND ORIENTATION [PENDING].';
+  return 'CONSENT FOR '+procLabel+' '+(c?'SIGNED':'[PENDING]')+' AND ORIENTATION '+(o?'DONE':'[PENDING]')+'.';
+}
+function mealLine(){
+  const mealTime = document.getElementById('mealTime').value || '[TIME]';
+  return 'LAST MEAL @ '+mealTime+'.';
+}
+
+function renderReports(){
+  const t = document.getElementById('procType').value;
+  const side = state.side || '[LT/RT]';
+  const anes = state.anes || '[LA/GA]';
+  const doctor = document.getElementById('doctorName').value || '[NAME]';
+  const tca = document.getElementById('tca').value || '1 WEEK LATER';
+  const branula = state.branula || '[22G/20G]';
+  let pre = '', post = '';
+
+  if(t==='phaco'){
+    const proc = side+' PHACO';
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine(proc), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'EYE TOILET DONE AND EYE DROP 2.5% MIDFRIN AND 1% MYDRIACYL INSTILLED TO '+(side==='LT'?'LEFT':side==='RT'?'RIGHT':'[LEFT/RIGHT]')+' EYE.','AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
+    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT '+proc+' DONE UNDER '+anes+'.',side+' EYE SHIELD IN PLACE, SLIGHT REDNESS SEEN BUT NO ACTIVE BLEEDING. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','EYE DROP VIGAMOX AND PRED-FORTE STAT GIVEN, HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.','AWAITING TO REVIEW IN THE CLINIC.','','SEEN BY DR '+doctor+' IN CLINIC. ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE. TCA '+tca+'.','PATIENT / FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+  } else if(t==='injection'){
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR INJECTION.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine('INJECTION'), mealLine(),'HISTORY TAKEN:', allergyLine(),'MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
+    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT '+side+' PHACOINJECTION / RE PTERYGIUM EXCISION AND GRAFT DONE UNDER '+anes+'.',side+' EYE SHIELD IN PLACE, SLIGHT REDNESS SEEN BUT NO ACTIVE BLEEDING. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE CLINIC.','','SEEN BY DR '+doctor+' IN CLINIC @ [TIME]. ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE. TCA '+tca+'. HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.','PATIENT / FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+  } else if(t==='pterygium'){
+    const proc = side+' PTERYGIUM';
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine(proc), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
+    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT '+proc+' UNDER '+anes+'.',side+' EYE PAD IN PLACE. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE CLINIC.','','POST CLINIC','SEEN BY DR '+doctor+' IN CLINIC.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+  } else if(t==='colonoscopy'){
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR COLONOSCOPY.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine('COLONOSCOPY'), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','BRANULA SIZE '+branula+' INSERTED WITH ASEPTIC TECHNIQUE.'].join('\n');
+    post = ['RECEIVED PATIENT FROM AIR LOCK VIA BED. PATIENT COLONOSCOPY UNDER GA DONE.','PATIENT WAS ORIENTATED AND ALERT.','VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE DAY CARE WARD.','','POST REVIEW','SEEN BY DR '+doctor+' IN DAY CARE WARD.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+  } else if(t==='bcf'){
+    const proc = side+' BCF';
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine(proc), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
+    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT BCF UNDER '+anes+'.',side+' HAND WITH TEGADERM IN PLACE. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE DAY CARE WARD.','','POST REVIEW','SEEN BY DR '+doctor+' IN DAY CARE WARD.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+  } else {
+    pre = '请先选择手术类型。';
+    post = '';
+  }
+
+  if(!manualPre) document.getElementById('preReport').value = pre;
+  if(!manualPost) document.getElementById('postReport').value = post;
+}
+
+async function copyField(id){
+  const msg = document.getElementById('copyMsg');
+  const el = document.getElementById(id);
+  const flat = el.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0).join(' ').replace(/ {2,}/g,' ').trim();
+  try{
+    await navigator.clipboard.writeText(flat);
+    msg.textContent = '已复制到剪贴板（已转为单行）';
+  }catch(e){
+    const temp = document.createElement('textarea');
+    temp.value = flat;
+    temp.style.position='fixed';
+    temp.style.opacity='0';
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    msg.textContent = '已复制（已转为单行，或请手动长按选取）';
+  }
+  setTimeout(()=>{ msg.textContent=''; }, 2500);
+}
+document.getElementById('copySummary').addEventListener('click', ()=>copyField('summary'));
+document.getElementById('copyPre').addEventListener('click', ()=>copyField('preReport'));
+document.getElementById('copyPost').addEventListener('click', ()=>copyField('postReport'));
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('input[type=text], input[type=time]').forEach(i=>i.value='');
+  document.getElementById('procType').value='';
+  document.getElementById('extraFields').classList.add('hidden');
+  document.querySelectorAll('button.chip').forEach(b=>setActive(b,false));
+  document.getElementById('ownMedDetail').classList.add('hidden');
+  document.getElementById('surgeryDetail').classList.add('hidden');
+  document.getElementById('allergyDetail').classList.add('hidden');
+  Object.assign(state, {ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, anes:null, branula:null});
+  manualPre=false; manualPost=false;
+  renderSummary(); renderReports();
+});
+
+renderSummary();
+renderReports();
+</script>
+</body>
+</html>
