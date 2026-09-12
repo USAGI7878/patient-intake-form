@@ -455,7 +455,7 @@ function renderReports(){
       postOpLines.push('','IF CT ','CALLED UP FROM RADIOLOGY DEPARTMENT TO SEND PATIENT FOR CT AT '+ctTime+' HRS .PATIENT RESTING ON BED CONTINUE NBM FOR CT SCAN .');
     }
     postOp = postOpLines.join('\n');
-    postReview = ['POST REVIEW','REVIEWED BY DR '+doctor+' ,'].join('\n');
+    postReview = ['POST REVIEW','REVIEWED BY DR '+doctor+' ,''DISCHAGE CHECKLIST DONE,ALLOW PATIENT TO DISCHARGE AFTER CLOSE BILL .'].join('\n');
   } else if(t==='bcf'){
     const proc = side+' BCF CREATION';
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine(proc, false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
