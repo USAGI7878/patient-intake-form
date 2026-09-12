@@ -255,13 +255,20 @@
 </section>
 
 <section>
-  <p class="label">PRE 报告（可直接编辑后复制）</p>
-  <textarea id="preReport" rows="10"></textarea>
+  <p class="label">PRE 报告 — 术前 / 检查前（可直接编辑后复制）</p>
+  <textarea id="preReport" rows="9"></textarea>
   <button type="button" class="actionBtn" id="copyPre">复制 PRE 报告</button>
 
-  <p class="label" style="margin-top:16px;">POST 报告（可直接编辑后复制）</p>
-  <textarea id="postReport" rows="12"></textarea>
-  <button type="button" class="actionBtn" id="copyPost">复制 POST 报告</button>
+  <p class="label" style="margin-top:16px;">POST OP 报告 — 术后刚回病房，医生尚未 review（可直接编辑后复制）</p>
+  <textarea id="postOpReport" rows="8"></textarea>
+  <button type="button" class="actionBtn" id="copyPostOp">复制 POST OP 报告</button>
+
+  <div id="postReviewSection">
+    <p class="label" style="margin-top:16px;">POST REVIEW 报告 — 医生看诊后，可以出院（可直接编辑后复制）</p>
+    <textarea id="postReviewReport" rows="7"></textarea>
+    <button type="button" class="actionBtn" id="copyPostReview">复制 POST REVIEW 报告</button>
+  </div>
+  <p id="noReviewNote" class="sub hidden" style="margin-top:10px;">此项目模板没有单独的 POST REVIEW 记录，医生 review 后直接在 POST OP 记录上补充即可。</p>
 
   <p class="msg" id="copyMsg"></p>
   <button type="button" class="actionBtn secondary" id="resetBtn">清空重填（下一位病人）</button>
@@ -269,7 +276,7 @@
 
 <script>
 const state = { ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, finger:null, doctor:null, needCT:false };
-let manualPre = false, manualPost = false;
+let manualPre = false, manualPostOp = false, manualPostReview = false;
 
 function setActive(btn, active){ btn.classList.toggle('active', active); }
 
@@ -291,7 +298,7 @@ document.querySelectorAll('button[data-group]').forEach(btn=>{
     if(group==='doctor'){
       document.getElementById('doctorOther').classList.toggle('hidden', val!=='__other');
     }
-    manualPre=false; manualPost=false;
+    manualPre=false; manualPostOp=false; manualPostReview=false;
     renderSummary(); renderReports();
   });
 });
@@ -304,18 +311,19 @@ document.querySelectorAll('button[data-toggle]').forEach(btn=>{
     if(key==='needCT'){
       document.getElementById('ctTime').classList.toggle('hidden', !state.needCT);
     }
-    manualPre=false; manualPost=false;
+    manualPre=false; manualPostOp=false; manualPostReview=false;
     renderSummary(); renderReports();
   });
 });
 
 ['mealTime','mealFood','ownMedDetail','historyOther','surgeryDetail','allergyDetail','valuables','dietOther','doctorOther','tca','branula','nichibanTime','ctTime'].forEach(id=>{
   const el = document.getElementById(id);
-  if(el) el.addEventListener('input', ()=>{ manualPre=false; manualPost=false; renderSummary(); renderReports(); });
+  if(el) el.addEventListener('input', ()=>{ manualPre=false; manualPostOp=false; manualPostReview=false; renderSummary(); renderReports(); });
 });
 
 document.getElementById('preReport').addEventListener('input', ()=>{ manualPre=true; });
-document.getElementById('postReport').addEventListener('input', ()=>{ manualPost=true; });
+document.getElementById('postOpReport').addEventListener('input', ()=>{ manualPostOp=true; });
+document.getElementById('postReviewReport').addEventListener('input', ()=>{ manualPostReview=true; });
 
 document.getElementById('procType').addEventListener('change', (e)=>{
   const t = e.target.value;
@@ -326,7 +334,7 @@ document.getElementById('procType').addEventListener('change', (e)=>{
   document.getElementById('nichibanBlock').classList.toggle('hidden', t!=='coros');
   document.getElementById('tcaBlock').classList.toggle('hidden', !['phaco','injection','pterygium'].includes(t));
   document.getElementById('ctBlock').classList.toggle('hidden', t!=='colonoscopy');
-  manualPre=false; manualPost=false;
+  manualPre=false; manualPostOp=false; manualPostReview=false;
   renderReports();
 });
 
@@ -413,47 +421,57 @@ function renderReports(){
   const side = state.side || '[LEFT/RIGHT]';
   const doctor = doctorName();
   const tca = tcaText();
-  let pre = '', post = '';
+  let pre = '', postOp = '', postReview = '', hasReview = true;
 
   if(t==='phaco'){
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+side+' PHACO .','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS IN NORMAL RANGE .'+consentOrientLine(side+' PHACO', true), mealLine(),'HISTORY TAKEN :','','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'EYE TOILET DONE AND EYE DROP 2.5% MIDFRIN AND 1% MYDRIACYL INSTILLED TO '+side+' EYE .AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,PATIENT '+side+' PHACO DONE UNDER LA .'+side+' EYE SHIELD IN PLACE  ,SLIGHTLY REDNESS SEEN BUT NO ACTIVE BLEEDING .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT REST IN BED AND CLOSE MONITORED ,EYE DROP VIGAMOX AND PREDFORTE STAT GIVEN ,HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.AWAITING TO REVIEW IN CLINIC .','','POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE.TCA '+tca+' .PATIENT AND PATIENT FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE .','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
+    postOp = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,PATIENT '+side+' PHACO DONE UNDER LA .'+side+' EYE SHIELD IN PLACE  ,SLIGHTLY REDNESS SEEN BUT NO ACTIVE BLEEDING .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT REST IN BED AND CLOSE MONITORED ,EYE DROP VIGAMOX AND PREDFORTE STAT GIVEN ,HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.AWAITING TO REVIEW IN CLINIC .'].join('\n');
+    postReview = ['POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE.TCA '+tca+' .PATIENT AND PATIENT FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE .','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
   } else if(t==='injection'){
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+side+' EYE INJECCTION  .','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS IN NORMAL RANGE .'+consentOrientLine(side+' EYE INJECCTION', true), mealLine(),'HISTORY TAKEN :','','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,PATIENT '+side+' EYE INJECCTION DONE UNDER LA .'+side+' EYE PAD IN PLACE .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT REST IN BED AND CLOSE MONITORED.AWAITING TO REVIEW IN CLINIC .','','POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW DISCHARGE WITH TTA .TCA '+tca+' .DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
+    postOp = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,PATIENT '+side+' EYE INJECCTION DONE UNDER LA .'+side+' EYE PAD IN PLACE .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT REST IN BED AND CLOSE MONITORED.AWAITING TO REVIEW IN CLINIC .'].join('\n');
+    postReview = ['POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW DISCHARGE WITH TTA .TCA '+tca+' .DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
   } else if(t==='pterygium'){
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+side+' EYE PTERYRIUM.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS IN NORMAL RANGE .'+consentOrientLine(side+' EYE PTERYRIUM', true), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+side+' EYE PTERYRIUM DONE UNDER LA .'+side+' EYE PAD IN PLACE .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING TO REVIEW IN CLINIC .','','POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW DISCHARGE WITH TTA .TCA '+tca+' .DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
+    postOp = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+side+' EYE PTERYRIUM DONE UNDER LA .'+side+' EYE PAD IN PLACE .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING TO REVIEW IN CLINIC .'].join('\n');
+    postReview = ['POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW DISCHARGE WITH TTA .TCA '+tca+' .DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
   } else if(t==='trigger'){
     const finger = state.finger || '[FINGER]';
     const proc = side+' '+finger+' TRIGGER FINGER RELEASE';
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine(proc, false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'].join('\n');
+    postOp = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'].join('\n');
+    postReview = ''; hasReview = false;
   } else if(t==='coros'){
     const branula = document.getElementById('branula').value || '[SIZE]';
     const nichiban = document.getElementById('nichibanTime').value || '[TIME]';
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR COROS.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine('COROS', false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'BRANULA SIZE '+branula+' INSERTED.','AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    post = ['POST COROS','RECEIVED PATIENT FROM CATH LAB VIA BED ,NICHIBAN DRESSING AT '+side+' RADIAL DRY AND INTACT. NO OOZING OR BLEEDING SEEN. NO HEMATOMA.VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.','NICHIBAN TO OFF AT :'+nichiban+' HRS.','G/C CONSCIOUS ALERT.'].join('\n');
+    postOp = ['POST COROS','RECEIVED PATIENT FROM CATH LAB VIA BED ,NICHIBAN DRESSING AT '+side+' RADIAL DRY AND INTACT. NO OOZING OR BLEEDING SEEN. NO HEMATOMA.VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.','NICHIBAN TO OFF AT :'+nichiban+' HRS.','G/C CONSCIOUS ALERT.'].join('\n');
+    postReview = ''; hasReview = false;
   } else if(t==='colonoscopy'){
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR COLONOSCOPY.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine('COLONOSCOPY', false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    const postLines = ['POST SCOPE','RECEIVED PATIENT FROM ENDOSCOPY ROOM VIA BED ,COLONOSCOPY DONE UNDER SEDATION .VITAL SIGNS CHECKED IN ENDOSCOPY ROOM.PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'];
+    const postOpLines = ['POST SCOPE','RECEIVED PATIENT FROM ENDOSCOPY ROOM VIA BED ,COLONOSCOPY DONE UNDER SEDATION .VITAL SIGNS CHECKED IN ENDOSCOPY ROOM.PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'];
     if(state.needCT){
       const ctTime = document.getElementById('ctTime').value || '[TIME]';
-      postLines.push('','IF CT ','CALLED UP FROM RADIOLOGY DEPARTMENT TO SEND PATIENT FOR CT AT '+ctTime+' HRS .PATIENT RESTING ON BED CONTINUE NBM FOR CT SCAN .');
+      postOpLines.push('','IF CT ','CALLED UP FROM RADIOLOGY DEPARTMENT TO SEND PATIENT FOR CT AT '+ctTime+' HRS .PATIENT RESTING ON BED CONTINUE NBM FOR CT SCAN .');
     }
-    postLines.push('','POST REVIEW','REVIEWED BY DR '+doctor+' ,');
-    post = postLines.join('\n');
+    postOp = postOpLines.join('\n');
+    postReview = ['POST REVIEW','REVIEWED BY DR '+doctor+' ,'].join('\n');
   } else if(t==='bcf'){
     const proc = side+' BCF CREATION';
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine(proc, false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
-    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.BP TAKE FROM  '+oppositeSide(state.side)+' UPPER LIMB .PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .','','POST REVIEW ','REVIEWED BY DR '+doctor+' ,ALLOW DISCHARGE WITH MEMO.WAITING FOR BILLING TO CLOSE BILL .'].join('\n');
+    postOp = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.BP TAKE FROM  '+oppositeSide(state.side)+' UPPER LIMB .PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'].join('\n');
+    postReview = ['POST REVIEW ','REVIEWED BY DR '+doctor+' ,ALLOW DISCHARGE WITH MEMO.WAITING FOR BILLING TO CLOSE BILL .'].join('\n');
   } else {
     pre = '请先选择手术 / 检查类型。';
-    post = '';
+    postOp = ''; postReview = ''; hasReview = false;
   }
 
+  document.getElementById('postReviewSection').classList.toggle('hidden', !hasReview);
+  document.getElementById('noReviewNote').classList.toggle('hidden', hasReview);
+
   if(!manualPre) document.getElementById('preReport').value = pre;
-  if(!manualPost) document.getElementById('postReport').value = post;
+  if(!manualPostOp) document.getElementById('postOpReport').value = postOp;
+  if(!manualPostReview) document.getElementById('postReviewReport').value = postReview;
 }
 
 async function copyField(id){
@@ -478,7 +496,8 @@ async function copyField(id){
 }
 document.getElementById('copySummary').addEventListener('click', ()=>copyField('summary'));
 document.getElementById('copyPre').addEventListener('click', ()=>copyField('preReport'));
-document.getElementById('copyPost').addEventListener('click', ()=>copyField('postReport'));
+document.getElementById('copyPostOp').addEventListener('click', ()=>copyField('postOpReport'));
+document.getElementById('copyPostReview').addEventListener('click', ()=>copyField('postReviewReport'));
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.querySelectorAll('input[type=text], input[type=time]').forEach(i=>i.value='');
@@ -491,7 +510,9 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('doctorOther').classList.add('hidden');
   document.getElementById('ctTime').classList.add('hidden');
   Object.assign(state, {ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, finger:null, doctor:null, needCT:false});
-  manualPre=false; manualPost=false;
+  manualPre=false; manualPostOp=false; manualPostReview=false;
+  document.getElementById('postReviewSection').classList.remove('hidden');
+  document.getElementById('noReviewNote').classList.add('hidden');
   renderSummary(); renderReports();
 });
 
