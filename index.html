@@ -101,6 +101,7 @@
   }
   .msg{font-size:12px;color:var(--success);height:16px;margin:6px 0 0;}
   .fieldGroup{display:flex;flex-direction:column;}
+  .subLabel{font-size:12px;color:var(--text-secondary);margin:10px 0 6px;}
 </style>
 </head>
 <body>
@@ -124,8 +125,8 @@
 <section>
   <p class="label">病史</p>
   <div class="row">
-    <button type="button" class="chip" data-group="history" data-val="HTN">高血压</button>
-    <button type="button" class="chip" data-group="history" data-val="DM">糖尿病</button>
+    <button type="button" class="chip" data-group="history" data-val="HPT">高血压 HPT</button>
+    <button type="button" class="chip" data-group="history" data-val="DM">糖尿病 DM</button>
     <button type="button" class="chip" data-group="history" data-val="Heart">心脏病</button>
   </div>
   <input type="text" id="historyOther" placeholder="其他病史">
@@ -143,7 +144,7 @@
 <section>
   <p class="label">过敏史</p>
   <div class="row">
-    <button type="button" class="chip" data-group="allergy" data-val="nkda">NKDA 无</button>
+    <button type="button" class="chip" data-group="allergy" data-val="nil">NIL 无</button>
     <button type="button" class="chip" data-group="allergy" data-val="has">有过敏</button>
   </div>
   <input type="text" id="allergyDetail" placeholder="药物/食物/乳胶过敏内容" class="hidden">
@@ -192,31 +193,64 @@
 </section>
 
 <section>
-  <p class="label">手术类型</p>
+  <p class="label">手术 / 检查类型</p>
   <select id="procType">
-    <option value="">选择手术类型</option>
+    <option value="">选择类型</option>
     <option value="phaco">PHACO 白内障手术</option>
-    <option value="injection">INJECTION 眼内注射</option>
+    <option value="injection">EYE INJECTION 眼内注射</option>
     <option value="pterygium">PTERYGIUM 翼状胬肉切除术</option>
+    <option value="trigger">TRIGGER FINGER RELEASE 扳机指松解术</option>
+    <option value="coros">COROS 冠状动脉造影</option>
     <option value="colonoscopy">COLONOSCOPY 肠镜检查</option>
-    <option value="bcf">BCF / OTHER 动静脉瘘造瘘术</option>
+    <option value="bcf">BCF CREATION 动静脉瘘造瘘术</option>
   </select>
 
   <div id="extraFields" class="hidden" style="margin-top:10px;">
-    <div class="row" id="sideRow">
-      <button type="button" class="chip" data-group="side" data-val="LT">左 LT</button>
-      <button type="button" class="chip" data-group="side" data-val="RT">右 RT</button>
+
+    <div id="sideRow" class="row">
+      <button type="button" class="chip" data-group="side" data-val="LEFT">左 LEFT</button>
+      <button type="button" class="chip" data-group="side" data-val="RIGHT">右 RIGHT</button>
     </div>
-    <div class="row" id="anesRow">
-      <button type="button" class="chip" data-group="anes" data-val="LA">局麻 LA</button>
-      <button type="button" class="chip" data-group="anes" data-val="GA">全麻 GA</button>
+
+    <div id="fingerBlock" class="hidden">
+      <p class="subLabel">手指</p>
+      <div class="row">
+        <button type="button" class="chip" data-group="finger" data-val="THUMB">拇指</button>
+        <button type="button" class="chip" data-group="finger" data-val="INDEX FINGER">食指</button>
+        <button type="button" class="chip" data-group="finger" data-val="MIDDLE FINGER">中指</button>
+        <button type="button" class="chip" data-group="finger" data-val="RING FINGER">无名指</button>
+        <button type="button" class="chip" data-group="finger" data-val="LITTLE FINGER">小指</button>
+      </div>
     </div>
-    <div class="row hidden" id="branulaRow">
-      <button type="button" class="chip" data-group="branula" data-val="22G">22G</button>
-      <button type="button" class="chip" data-group="branula" data-val="20G">20G</button>
+
+    <div id="branulaBlock" class="hidden">
+      <input type="text" id="branula" placeholder="BRANULA SIZE，例如 20G X2">
     </div>
-    <input type="text" id="doctorName" placeholder="主治医生姓名">
-    <input type="text" id="tca" placeholder="复诊安排（默认：1 week later）">
+
+    <div id="nichibanBlock" class="hidden">
+      <input type="text" id="nichibanTime" placeholder="NICHIBAN TO OFF AT（小时，例如 1400）">
+    </div>
+
+    <div id="doctorBlock">
+      <p class="subLabel">主治 / 复诊医生</p>
+      <div class="row">
+        <button type="button" class="chip" data-group="doctor" data-val="OOI/DIANA">OOI/DIANA</button>
+        <button type="button" class="chip" data-group="doctor" data-val="LIM">LIM</button>
+        <button type="button" class="chip" data-group="doctor" data-val="LOI">LOI</button>
+        <button type="button" class="chip" data-group="doctor" data-val="__other">其他</button>
+      </div>
+      <input type="text" id="doctorOther" placeholder="医生姓名" class="hidden">
+    </div>
+
+    <div id="tcaBlock" class="hidden">
+      <input type="text" id="tca" placeholder="复诊安排（默认：1 WEEK LATER）">
+    </div>
+
+    <div id="ctBlock" class="hidden">
+      <button type="button" class="chip wide" data-toggle="needCT">需要送 CT</button>
+      <input type="text" id="ctTime" placeholder="送 CT 时间（小时，例如 1600）" class="hidden">
+    </div>
+
   </div>
 </section>
 
@@ -226,7 +260,7 @@
   <button type="button" class="actionBtn" id="copyPre">复制 PRE 报告</button>
 
   <p class="label" style="margin-top:16px;">POST 报告（可直接编辑后复制）</p>
-  <textarea id="postReport" rows="10"></textarea>
+  <textarea id="postReport" rows="12"></textarea>
   <button type="button" class="actionBtn" id="copyPost">复制 POST 报告</button>
 
   <p class="msg" id="copyMsg"></p>
@@ -234,7 +268,7 @@
 </section>
 
 <script>
-const state = { ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, anes:null, branula:null };
+const state = { ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, finger:null, doctor:null, needCT:false };
 let manualPre = false, manualPost = false;
 
 function setActive(btn, active){ btn.classList.toggle('active', active); }
@@ -254,6 +288,9 @@ document.querySelectorAll('button[data-group]').forEach(btn=>{
     document.getElementById('ownMedDetail').classList.toggle('hidden', state.ownMed!=='yes');
     document.getElementById('surgeryDetail').classList.toggle('hidden', state.surgery!=='has');
     document.getElementById('allergyDetail').classList.toggle('hidden', state.allergy!=='has');
+    if(group==='doctor'){
+      document.getElementById('doctorOther').classList.toggle('hidden', val!=='__other');
+    }
     manualPre=false; manualPost=false;
     renderSummary(); renderReports();
   });
@@ -264,13 +301,17 @@ document.querySelectorAll('button[data-toggle]').forEach(btn=>{
     const key = btn.dataset.toggle;
     state[key] = !state[key];
     setActive(btn, state[key]);
+    if(key==='needCT'){
+      document.getElementById('ctTime').classList.toggle('hidden', !state.needCT);
+    }
     manualPre=false; manualPost=false;
     renderSummary(); renderReports();
   });
 });
 
-['mealTime','mealFood','ownMedDetail','historyOther','surgeryDetail','allergyDetail','valuables','dietOther','doctorName','tca'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', ()=>{ manualPre=false; manualPost=false; renderSummary(); renderReports(); });
+['mealTime','mealFood','ownMedDetail','historyOther','surgeryDetail','allergyDetail','valuables','dietOther','doctorOther','tca','branula','nichibanTime','ctTime'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', ()=>{ manualPre=false; manualPost=false; renderSummary(); renderReports(); });
 });
 
 document.getElementById('preReport').addEventListener('input', ()=>{ manualPre=true; });
@@ -279,9 +320,12 @@ document.getElementById('postReport').addEventListener('input', ()=>{ manualPost
 document.getElementById('procType').addEventListener('change', (e)=>{
   const t = e.target.value;
   document.getElementById('extraFields').classList.toggle('hidden', !t);
-  document.getElementById('sideRow').classList.toggle('hidden', !['phaco','pterygium','bcf'].includes(t));
-  document.getElementById('anesRow').classList.toggle('hidden', t==='colonoscopy');
-  document.getElementById('branulaRow').classList.toggle('hidden', t!=='colonoscopy');
+  document.getElementById('sideRow').classList.toggle('hidden', !['phaco','injection','pterygium','trigger','bcf','coros'].includes(t));
+  document.getElementById('fingerBlock').classList.toggle('hidden', t!=='trigger');
+  document.getElementById('branulaBlock').classList.toggle('hidden', t!=='coros');
+  document.getElementById('nichibanBlock').classList.toggle('hidden', t!=='coros');
+  document.getElementById('tcaBlock').classList.toggle('hidden', !['phaco','injection','pterygium'].includes(t));
+  document.getElementById('ctBlock').classList.toggle('hidden', t!=='colonoscopy');
   manualPre=false; manualPost=false;
   renderReports();
 });
@@ -298,7 +342,7 @@ function renderSummary(){
   const valuables = document.getElementById('valuables').value;
   const dietOther = document.getElementById('dietOther').value;
 
-  const historyLabels = {HTN:'高血压',DM:'糖尿病',Heart:'心脏病'};
+  const historyLabels = {HPT:'高血压',DM:'糖尿病',Heart:'心脏病'};
   const historyText = [...state.history].map(h=>historyLabels[h]).concat(historyOther?[historyOther]:[]).join('、') || '无';
   const dentureLabels = {none:'无',upper:'上排',lower:'下排',both:'上下都有'};
   const handoverLabels = {patient:'病人/家属',safe:'病房保险箱'};
@@ -310,7 +354,7 @@ function renderSummary(){
     line('自备药物', state.ownMed==='yes' ? ('有 - '+(ownMedDetail||'')) : (state.ownMed==='no' ? '无' : '')),
     '', '【病史】', historyText,
     '', '【手术史】', state.surgery==='nil' ? '无' : (state.surgery==='has' ? (surgeryDetail||'有（未填详情）') : ''),
-    '', '【过敏史】', state.allergy==='nkda' ? 'NKDA 无已知药物过敏' : (state.allergy==='has' ? (allergyDetail||'有（未填详情）') : ''),
+    '', '【过敏史】', state.allergy==='nil' ? 'NIL 无已知过敏' : (state.allergy==='has' ? (allergyDetail||'有（未填详情）') : ''),
     '', '【假牙】', state.denture ? dentureLabels[state.denture] : '',
     '', '【财物保管】', line('物品', valuables), line('交予', state.handover ? handoverLabels[state.handover] : ''),
     '', '【病房饮食】', (state.diet ? dietLabels[state.diet] : '') + (dietOther ? '，'+dietOther : ''),
@@ -322,7 +366,7 @@ function renderSummary(){
 }
 
 function historyText(){
-  const labels = {HTN:'HTN',DM:'DM',Heart:'HEART DISEASE'};
+  const labels = {HPT:'HPT',DM:'DM',Heart:'HEART DISEASE'};
   const historyOther = document.getElementById('historyOther').value;
   const arr = [...state.history].map(h=>labels[h]);
   if(historyOther) arr.push(historyOther.toUpperCase());
@@ -334,52 +378,77 @@ function surgeryText(){
   if(state.surgery==='has') return surgeryDetail ? surgeryDetail.toUpperCase() : '[PENDING DETAIL]';
   return '[PENDING]';
 }
-function allergyLine(){
+function allergyText(){
   const allergyDetail = document.getElementById('allergyDetail').value;
-  if(state.allergy==='nkda') return 'NO ALLERGY.';
-  if(state.allergy==='has') return 'ALLERGY: ' + (allergyDetail ? allergyDetail.toUpperCase() : '[PENDING DETAIL]') + '.';
-  return 'NO ALLERGY / ALLERGY STATUS: [PENDING].';
+  if(state.allergy==='nil') return 'NIL';
+  if(state.allergy==='has') return allergyDetail ? allergyDetail.toUpperCase() : '[PENDING DETAIL]';
+  return '[PENDING]';
 }
-function consentOrientLine(procLabel){
+function consentOrientLine(procLabel, withSigned){
   const c = state.consent, o = state.orientation;
-  if(c && o) return 'CONSENT FOR '+procLabel+' SIGNED AND ORIENTATION DONE.';
-  if(!c && !o) return 'CONSENT FOR '+procLabel+' [PENDING] AND ORIENTATION [PENDING].';
-  return 'CONSENT FOR '+procLabel+' '+(c?'SIGNED':'[PENDING]')+' AND ORIENTATION '+(o?'DONE':'[PENDING]')+'.';
+  const signedWord = withSigned ? (c?'SIGNED':'[PENDING]') : (c?'':'[PENDING]');
+  if(withSigned){
+    return 'CONSENT FOR '+procLabel+' '+signedWord+' AND ORIENTATION '+(o?'DONE':'[PENDING]')+' .';
+  }
+  return 'CONSENT FOR '+procLabel+(c?' AND':' [PENDING] AND')+' ORIENTATION '+(o?'DONE':'[PENDING]')+' .';
 }
 function mealLine(){
-  const mealTime = document.getElementById('mealTime').value || '[TIME]';
-  return 'LAST MEAL @ '+mealTime+'.';
+  const mealTime = document.getElementById('mealTime').value || '';
+  return 'LAST MEAL @ '+mealTime+' .';
 }
+function doctorName(){
+  if(state.doctor==='__other'){
+    const other = document.getElementById('doctorOther').value;
+    return other ? other.toUpperCase() : '[NAME]';
+  }
+  return state.doctor || '[NAME]';
+}
+function tcaText(){
+  return (document.getElementById('tca').value || '1 WEEK LATER').toUpperCase();
+}
+function oppositeSide(s){ return s==='LEFT' ? 'RIGHT' : (s==='RIGHT' ? 'LEFT' : '[OPPOSITE SIDE]'); }
 
 function renderReports(){
   const t = document.getElementById('procType').value;
-  const side = state.side || '[LT/RT]';
-  const anes = state.anes || '[LA/GA]';
-  const doctor = document.getElementById('doctorName').value || '[NAME]';
-  const tca = document.getElementById('tca').value || '1 WEEK LATER';
-  const branula = state.branula || '[22G/20G]';
+  const side = state.side || '[LEFT/RIGHT]';
+  const doctor = doctorName();
+  const tca = tcaText();
   let pre = '', post = '';
 
   if(t==='phaco'){
-    const proc = side+' PHACO';
-    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine(proc), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'EYE TOILET DONE AND EYE DROP 2.5% MIDFRIN AND 1% MYDRIACYL INSTILLED TO '+(side==='LT'?'LEFT':side==='RT'?'RIGHT':'[LEFT/RIGHT]')+' EYE.','AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
-    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT '+proc+' DONE UNDER '+anes+'.',side+' EYE SHIELD IN PLACE, SLIGHT REDNESS SEEN BUT NO ACTIVE BLEEDING. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','EYE DROP VIGAMOX AND PRED-FORTE STAT GIVEN, HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.','AWAITING TO REVIEW IN THE CLINIC.','','SEEN BY DR '+doctor+' IN CLINIC. ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE. TCA '+tca+'.','PATIENT / FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+side+' PHACO .','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS IN NORMAL RANGE .'+consentOrientLine(side+' PHACO', true), mealLine(),'HISTORY TAKEN :','','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'EYE TOILET DONE AND EYE DROP 2.5% MIDFRIN AND 1% MYDRIACYL INSTILLED TO '+side+' EYE .AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,PATIENT '+side+' PHACO DONE UNDER LA .'+side+' EYE SHIELD IN PLACE  ,SLIGHTLY REDNESS SEEN BUT NO ACTIVE BLEEDING .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT REST IN BED AND CLOSE MONITORED ,EYE DROP VIGAMOX AND PREDFORTE STAT GIVEN ,HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.AWAITING TO REVIEW IN CLINIC .','','POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE.TCA '+tca+' .PATIENT AND PATIENT FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE .','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
   } else if(t==='injection'){
-    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR INJECTION.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine('INJECTION'), mealLine(),'HISTORY TAKEN:', allergyLine(),'MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
-    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT '+side+' PHACOINJECTION / RE PTERYGIUM EXCISION AND GRAFT DONE UNDER '+anes+'.',side+' EYE SHIELD IN PLACE, SLIGHT REDNESS SEEN BUT NO ACTIVE BLEEDING. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE CLINIC.','','SEEN BY DR '+doctor+' IN CLINIC @ [TIME]. ALLOW TO DISCHARGE WITH EYE DROP VIGAMOX AND PRED-FORTE. TCA '+tca+'. HEALTH TALK GIVEN WITH TIMETABLE FOR EYE DROP.','PATIENT / FAMILY MEMBER SHOW CONFIDENT WITH EYE CARE.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+side+' EYE INJECCTION  .','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS IN NORMAL RANGE .'+consentOrientLine(side+' EYE INJECCTION', true), mealLine(),'HISTORY TAKEN :','','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,PATIENT '+side+' EYE INJECCTION DONE UNDER LA .'+side+' EYE PAD IN PLACE .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT REST IN BED AND CLOSE MONITORED.AWAITING TO REVIEW IN CLINIC .','','POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW DISCHARGE WITH TTA .TCA '+tca+' .DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
   } else if(t==='pterygium'){
-    const proc = side+' PTERYGIUM';
-    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine(proc), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
-    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT '+proc+' UNDER '+anes+'.',side+' EYE PAD IN PLACE. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE CLINIC.','','POST CLINIC','SEEN BY DR '+doctor+' IN CLINIC.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+side+' EYE PTERYRIUM.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS IN NORMAL RANGE .'+consentOrientLine(side+' EYE PTERYRIUM', true), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+side+' EYE PTERYRIUM DONE UNDER LA .'+side+' EYE PAD IN PLACE .VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING TO REVIEW IN CLINIC .','','POST REVIEW ','','SEEN BY DR '+doctor+' IN CLINIC .ALLOW DISCHARGE WITH TTA .TCA '+tca+' .DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER .'].join('\n');
+  } else if(t==='trigger'){
+    const finger = state.finger || '[FINGER]';
+    const proc = side+' '+finger+' TRIGGER FINGER RELEASE';
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine(proc, false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'].join('\n');
+  } else if(t==='coros'){
+    const branula = document.getElementById('branula').value || '[SIZE]';
+    const nichiban = document.getElementById('nichibanTime').value || '[TIME]';
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR COROS.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine('COROS', false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'BRANULA SIZE '+branula+' INSERTED.','AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    post = ['POST COROS','RECEIVED PATIENT FROM CATH LAB VIA BED ,NICHIBAN DRESSING AT '+side+' RADIAL DRY AND INTACT. NO OOZING OR BLEEDING SEEN. NO HEMATOMA.VITAL SIGNS CHECKED IN AIR LOCK.','PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.','NICHIBAN TO OFF AT :'+nichiban+' HRS.','G/C CONSCIOUS ALERT.'].join('\n');
   } else if(t==='colonoscopy'){
-    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR COLONOSCOPY.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine('COLONOSCOPY'), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','BRANULA SIZE '+branula+' INSERTED WITH ASEPTIC TECHNIQUE.'].join('\n');
-    post = ['RECEIVED PATIENT FROM AIR LOCK VIA BED. PATIENT COLONOSCOPY UNDER GA DONE.','PATIENT WAS ORIENTATED AND ALERT.','VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE DAY CARE WARD.','','POST REVIEW','SEEN BY DR '+doctor+' IN DAY CARE WARD.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR COLONOSCOPY.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine('COLONOSCOPY', false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    const postLines = ['POST SCOPE','RECEIVED PATIENT FROM ENDOSCOPY ROOM VIA BED ,COLONOSCOPY DONE UNDER SEDATION .VITAL SIGNS CHECKED IN ENDOSCOPY ROOM.PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'];
+    if(state.needCT){
+      const ctTime = document.getElementById('ctTime').value || '[TIME]';
+      postLines.push('','IF CT ','CALLED UP FROM RADIOLOGY DEPARTMENT TO SEND PATIENT FOR CT AT '+ctTime+' HRS .PATIENT RESTING ON BED CONTINUE NBM FOR CT SCAN .');
+    }
+    postLines.push('','POST REVIEW','REVIEWED BY DR '+doctor+' ,');
+    post = postLines.join('\n');
   } else if(t==='bcf'){
-    const proc = side+' BCF';
-    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY CSA STAFF / FAMILY.','PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCIOUS AND GENERALLY WELL, VITAL SIGNS IN NORMAL RANGE.', consentOrientLine(proc), mealLine(), allergyLine(),'HISTORY TAKEN:','MEDICAL: '+historyText(),'SURGICAL: '+surgeryText(),'AT PRESENT, PATIENT IS COMFORTABLE AND RESTING IN BED.','AWAITING OT TEAM TO CALL.','RECEIVED CALL FROM OT.'].join('\n');
-    post = ['RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR. PATIENT BCF UNDER '+anes+'.',side+' HAND WITH TEGADERM IN PLACE. VITAL SIGNS CHECKED AT AIR LOCK.','PATIENT IS COMFORTABLE AND UNDER CLOSE OBSERVATION.','AWAITING TO REVIEW IN THE DAY CARE WARD.','','POST REVIEW','SEEN BY DR '+doctor+' IN DAY CARE WARD.','DISCHARGE CHECKLIST DONE AND PATIENT ACCOMPANIED HOME BY FAMILY MEMBER.'].join('\n');
+    const proc = side+' BCF CREATION';
+    pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine(proc, false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
+    post = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.BP TAKE FROM  '+oppositeSide(state.side)+' UPPER LIMB .PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .','','POST REVIEW ','REVIEWED BY DR '+doctor+' ,ALLOW DISCHARGE WITH MEMO.WAITING FOR BILLING TO CLOSE BILL .'].join('\n');
   } else {
-    pre = '请先选择手术类型。';
+    pre = '请先选择手术 / 检查类型。';
     post = '';
   }
 
@@ -419,7 +488,9 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('ownMedDetail').classList.add('hidden');
   document.getElementById('surgeryDetail').classList.add('hidden');
   document.getElementById('allergyDetail').classList.add('hidden');
-  Object.assign(state, {ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, anes:null, branula:null});
+  document.getElementById('doctorOther').classList.add('hidden');
+  document.getElementById('ctTime').classList.add('hidden');
+  Object.assign(state, {ownMed:null, history:new Set(), surgery:null, allergy:null, denture:null, handover:null, diet:null, consent:false, orientation:false, side:null, finger:null, doctor:null, needCT:false});
   manualPre=false; manualPost=false;
   renderSummary(); renderReports();
 });
