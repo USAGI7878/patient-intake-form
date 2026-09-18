@@ -455,12 +455,12 @@ function renderReports(){
       postOpLines.push('','IF CT ','CALLED UP FROM RADIOLOGY DEPARTMENT TO SEND PATIENT FOR CT AT '+ctTime+' HRS .PATIENT RESTING ON BED CONTINUE NBM FOR CT SCAN .');
     }
     postOp = postOpLines.join('\n');
-    postReview = ['POST REVIEW','REVIEWED BY DR '+doctor+' ,''DISCHAGE CHECKLIST DONE,ALLOW PATIENT TO DISCHARGE AFTER CLOSE BILL .'].join('\n');
+    postReview = ['POST REVIEW','REVIEWED BY DR '+doctor+' ,'].join('\n');
   } else if(t==='bcf'){
     const proc = side+' BCF CREATION';
     pre = ['PATIENT WALK IN TO DAY CARE ACCOMPANIED BY FAMILY MEMBER AND CSA STAFF.PATIENT WAS ADMITTED FOR '+proc+'.','G/C CONSCOIUS AND GENERALLY WELL ,VITAL SIGNS CHECKED .'+consentOrientLine(proc, false), mealLine(),'','HISTORY TAKEN :','ALLERGY HISTORY :'+allergyText(),'MEDICAL :'+historyText(),'SURGICAL :'+surgeryText(),'AT PRESENT ,PATIENT IS COMFORTABLE AND RESTING IN BED .AWAITING OT TEAM TO CALL .'].join('\n');
     postOp = ['POST OP','','RECEIVED PATIENT FROM AIR LOCK VIA WHEELCHAIR ,'+proc+' DONE UNDER LA .DRESSING IN PLACE.NO ACTIVE BLEEDING SEEN .VITAL SIGNS CHECKED IN AIR LOCK.BP TAKE FROM  '+oppositeSide(state.side)+' UPPER LIMB .PATIENT IS COMFORTABLE IN BED AND CLOSE MONITORED.AWAITING DR '+doctor+' TO REVIEW IN DAY CARE .'].join('\n');
-    postReview = ['POST REVIEW','REVIEWED BY DR '+doctor+' ,DISCHARGE CHECKLIST DONE,ALLOW PATIENT TO DISCHARGE AFTER CLOSE BILL .'].join('\n');
+    postReview = ['POST REVIEW ','REVIEWED BY DR '+doctor+' ,ALLOW DISCHARGE WITH MEMO.WAITING FOR BILLING TO CLOSE BILL .'].join('\n');
   } else {
     pre = '请先选择手术 / 检查类型。';
     postOp = ''; postReview = ''; hasReview = false;
